@@ -11,11 +11,22 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(knitr)
 library(kableExtra)
 library(statInsightR)
+
 m <- params$model
+
+# ---- Safe Table Helper ----
+safe_kable <- function(df) {
+  if (is.null(df) || nrow(df) == 0 || ncol(df) == 0) {
+    cat("No valid results available for this test.\n")
+    return(invisible(NULL))
+  }
+  kable(df, format = "html") %>%
+    kable_styling(full_width = FALSE)
+}
 ```
 
 # Overview
@@ -38,47 +49,57 @@ summary_clean(m)
 ## Multicollinearity (VIF)
 
 ```{r}
-# Count model predictors (excluding intercept)
+library(car)
 num_terms <- length(attr(terms(m), "term.labels"))
 
 if (num_terms < 2) {
-  cat("VIF not available: model has fewer than 2 predictors.")
+  cat("VIF not available: model has fewer than 2 predictors.\n")
 } else {
-  library(car)
-  vif_vals <- car::vif(m)
+  vif_res <- try(vif(m), silent = TRUE)
 
-  kable(data.frame(
-    Variable = names(vif_vals),
-    VIF = round(vif_vals, 3)
-  ), format = "html") %>%
-    kable_styling(full_width = FALSE)
+  if (inherits(vif_res, "try-error")) {
+    cat("Could not compute VIF for this model.\n")
+  } else {
+    df_vif <- data.frame(
+      Variable = names(vif_res),
+      VIF = round(vif_res, 3)
+    )
+    safe_kable(df_vif)
+  }
 }
 ```
-
 
 ## Normality of Residuals (Shapiro-Wilk Test)
 
 ```{r}
-sh <- shapiro.test(residuals(m))
+sh <- try(shapiro.test(residuals(m)), silent = TRUE)
 
-kable(data.frame(
-  Statistic = sh$statistic,
-  p_value = sh$p.value
-), format = "html") %>%
-  kable_styling(full_width = FALSE)
+if (inherits(sh, "try-error") || is.null(sh$statistic) || is.null(sh$p.value)) {
+  cat("Shapiro-Wilk test could not be computed for this model.\n")
+} else {
+  df_sh <- data.frame(
+    Statistic = unname(sh$statistic),
+    p_value = unname(sh$p.value)
+  )
+  safe_kable(df_sh)
+}
 ```
 
 ## Heteroskedasticity (Breusch–Pagan Test)
 
-```{r warning=FALSE}
+```{r}
 library(lmtest)
-bp <- bptest(m)
+bp <- try(bptest(m), silent = TRUE)
 
-kable(data.frame(
-  Statistic = bp$statistic,
-  p_value = bp$p.value
-), format = "html") %>%
-  kable_styling(full_width = FALSE)
+if (inherits(bp, "try-error") || is.null(bp$statistic) || is.null(bp$p.value)) {
+  cat("Breusch–Pagan test could not be computed for this model.\n")
+} else {
+  df_bp <- data.frame(
+    Statistic = unname(bp$statistic),
+    p_value = unname(bp$p.value)
+  )
+  safe_kable(df_bp)
+}
 ```
 
 ## Influential Points (Cook’s Distance)
@@ -86,22 +107,17 @@ kable(data.frame(
 ```{r}
 ci <- cooks.distance(m)
 n <- length(ci)
-threshold <- 4 / n  # classic rule of thumb
 
 df_ci <- data.frame(
   Index = seq_along(ci),
   Cook = ci,
-  Influential = ifelse(ci > threshold, "Yes", "No")
+  Influential = ifelse(ci > (4/n), "Yes", "No")
 )
 
-# Sort descending
 df_ci <- df_ci[order(-df_ci$Cook), ]
 
-# ---- Top 10 Table ----
 cat("### Top 10 Most Influential Points\n\n")
-
-kable(head(df_ci, 10), format = "html") %>%
-  kable_styling(full_width = FALSE)
+safe_kable(head(df_ci, 10))
 ```
 
 <details>
@@ -110,12 +126,10 @@ kable(head(df_ci, 10), format = "html") %>%
 <br>
 
 ```{r}
-kable(df_ci, format = "html") %>%
-  kable_styling(full_width = FALSE)
+safe_kable(df_ci)
 ```
 
 </details>
-
 
 # Diagnostic Plots
 
@@ -138,9 +152,9 @@ plot(m, which = 4)
 ```
 
 # Conclusion
-- Significant predictors show meaningful association with the response variable.
-- VIF > 10 indicates possible multicollinearity.
-- Non-normal residuals suggest violated model assumptions.
-- High Cook’s distance indicates influential observations.
+
+```{r}
+cat(statInsightR::auto_conclusion(m))
+```
 
 This report was generated using **statInsightR**.
