@@ -27,7 +27,7 @@ check_model <- function(model) {
     max_vif <- max(vif_vals)
     if (max_vif > 10) {
       cat("Issue with multicollinearity\n")
-      cat(sprintf("   - Max VIF = %.24\n",max_vif))
+      cat(sprintf("   - Max VIF = %.4f\n",max_vif))
       cat("   - Explanation: Predictors are strongly correlated\n")
       cat("   - Suggestion: Remove variables, standardize, or use PCA.\n\n")
       warnings$multicollinearity <- vif_vals
