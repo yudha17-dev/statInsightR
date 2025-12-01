@@ -1,0 +1,146 @@
+---
+title: "Regression Model Report"
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
+    number_sections: true
+params:
+  model: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(kableExtra)
+library(statInsightR)
+m <- params$model
+```
+
+# Overview
+This document provides a complete statistical report for the fitted regression model.
+
+**Model Formula:**
+
+```{r}
+m$call
+```
+
+# Clean Summary
+
+```{r}
+summary_clean(m)
+```
+
+# Statistical Diagnostics
+
+## Multicollinearity (VIF)
+
+```{r}
+# Count model predictors (excluding intercept)
+num_terms <- length(attr(terms(m), "term.labels"))
+
+if (num_terms < 2) {
+  cat("VIF not available: model has fewer than 2 predictors.")
+} else {
+  library(car)
+  vif_vals <- car::vif(m)
+
+  kable(data.frame(
+    Variable = names(vif_vals),
+    VIF = round(vif_vals, 3)
+  ), format = "html") %>%
+    kable_styling(full_width = FALSE)
+}
+```
+
+
+## Normality of Residuals (Shapiro-Wilk Test)
+
+```{r}
+sh <- shapiro.test(residuals(m))
+
+kable(data.frame(
+  Statistic = sh$statistic,
+  p_value = sh$p.value
+), format = "html") %>%
+  kable_styling(full_width = FALSE)
+```
+
+## Heteroskedasticity (Breusch–Pagan Test)
+
+```{r warning=FALSE}
+library(lmtest)
+bp <- bptest(m)
+
+kable(data.frame(
+  Statistic = bp$statistic,
+  p_value = bp$p.value
+), format = "html") %>%
+  kable_styling(full_width = FALSE)
+```
+
+## Influential Points (Cook’s Distance)
+
+```{r}
+ci <- cooks.distance(m)
+n <- length(ci)
+threshold <- 4 / n  # classic rule of thumb
+
+df_ci <- data.frame(
+  Index = seq_along(ci),
+  Cook = ci,
+  Influential = ifelse(ci > threshold, "Yes", "No")
+)
+
+# Sort descending
+df_ci <- df_ci[order(-df_ci$Cook), ]
+
+# ---- Top 10 Table ----
+cat("### Top 10 Most Influential Points\n\n")
+
+kable(head(df_ci, 10), format = "html") %>%
+  kable_styling(full_width = FALSE)
+```
+
+<details>
+<summary><strong>Click to expand full Cook’s Distance table (all points)</strong></summary>
+
+<br>
+
+```{r}
+kable(df_ci, format = "html") %>%
+  kable_styling(full_width = FALSE)
+```
+
+</details>
+
+
+# Diagnostic Plots
+
+## Residuals vs Fitted
+
+```{r}
+plot(m, which = 1)
+```
+
+## Normal Q–Q Plot
+
+```{r}
+plot(m, which = 2)
+```
+
+## Cook’s Distance Plot
+
+```{r}
+plot(m, which = 4)
+```
+
+# Conclusion
+- Significant predictors show meaningful association with the response variable.
+- VIF > 10 indicates possible multicollinearity.
+- Non-normal residuals suggest violated model assumptions.
+- High Cook’s distance indicates influential observations.
+
+This report was generated using **statInsightR**.

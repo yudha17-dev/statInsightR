@@ -1,0 +1,17 @@
+Package: statInsightR
+Type: Package
+Title: Easy Statistical Insights
+Version: 0.1.0
+Authors@R:
+    person(
+      given ="Yudha",
+      family = "Akbar",
+      email = "yudhaimportant@gmail.com",
+      role = c("aut", "cre")
+    )
+Depends: R (>= 3.5)
+Description: Simple functions to make statistical analysis easier.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Imports: car, lmtest, rmarkdown, kableExtra
+RoxygenNote: 7.3.3
