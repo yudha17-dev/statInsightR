@@ -1,3 +1,11 @@
+#' Automatically generates a written conclusion for a regression model
+#'
+#' @param model A fitted lm() object
+#'
+#' @return A character string summarizing model interpretation
+#'
+#' @export
+
 auto_conclusion <- function(model) {
   out <- c()
   sm <- summary(model)
