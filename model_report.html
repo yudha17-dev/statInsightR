@@ -1763,8 +1763,6 @@ Residuals (Shapiro-Wilk Test)</h2>
 <table class="table" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
-</th>
 <th style="text-align:right;">
 Statistic
 </th>
@@ -1775,9 +1773,6 @@ p_value
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-W
-</td>
 <td style="text-align:right;">
 0.9878974
 </td>
@@ -1791,17 +1786,9 @@ W
 <div id="heteroskedasticity-breuschpagan-test" class="section level2" number="3.3">
 <h2><span class="header-section-number">3.3</span> Heteroskedasticity
 (Breusch–Pagan Test)</h2>
-<pre><code>## Loading required package: zoo</code></pre>
-<pre><code>## 
-## Attaching package: &#39;zoo&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     as.Date, as.Date.numeric</code></pre>
 <table class="table" style="color: black; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
-<th style="text-align:left;">
-</th>
 <th style="text-align:right;">
 Statistic
 </th>
@@ -1812,9 +1799,6 @@ p_value
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-BP
-</td>
 <td style="text-align:right;">
 12.34042
 </td>
@@ -4134,13 +4118,19 @@ Plot</h2>
 </div>
 <div id="conclusion" class="section level1" number="5">
 <h1><span class="header-section-number">5</span> Conclusion</h1>
-<ul>
-<li>Significant predictors show meaningful association with the response
-variable.</li>
-<li>VIF &gt; 10 indicates possible multicollinearity.</li>
-<li>Non-normal residuals suggest violated model assumptions.</li>
-<li>High Cook’s distance indicates influential observations.</li>
-</ul>
+<pre><code>## The model identified statistically significant predictors:
+## - **Speciesversicolor** (positive effect, estimate = 0.93, p = 0)
+## - **Speciesvirginica** (positive effect, estimate = 1.582, p = 0)
+## 
+## The model explains **61.9%** of the variation in the response (Adjusted R² = 0.614), indicating a **strong** overall fit.
+## 
+## VIF could not be computed for this model.
+## 
+## Residuals appear normally distributed (Shapiro–Wilk p ≥ 0.05).
+## 
+## Evidence of heteroskedasticity detected (Breusch–Pagan p &lt; 0.05).
+## 
+## Influential observations detected at indices: 51, 58, 106, 107, 118, 119, 123, 132, 136. These points may affect model stability.</code></pre>
 <p>This report was generated using <strong>statInsightR</strong>.</p>
 </div>
 
