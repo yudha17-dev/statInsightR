@@ -84,7 +84,7 @@ check_model <- function(model) {
     cat("Issue: High-leverage points detected\n")
     cat(sprintf("   - Leverage cutoff = %.4f\n",leverage_cutoff))
     cat("   - Observations: ", paste(high_lev, collapse = ", "),"\n")
-    cat("   - Suggestion: Recheck outliers or unusual valuese. \n\n")
+    cat("   - Suggestion: Recheck outliers or unusual values. \n\n")
     warnings$leverage <- high_lev
   } else {
     cat("No high leverage points detected.\n\n")
