@@ -78,14 +78,16 @@ if (inherits(sh, "try-error") ||
     is.null(sh$statistic) ||
     is.null(sh$p.value) ||
     length(sh$statistic) == 0 ||
-    length(sh$p.value) == 0) {
+    length(sh$p.value) == 0 ||
+    any(is.na(sh$statistic)) ||
+    any(is.na(sh$p.value))) {
   
-  cat("Shapiro–Wilk test could not be computed for this model.\n")
+  cat("Shapiro-Wilk test could not be computed for this model.\n")
   
 } else {
   df_sh <- data.frame(
-    Statistic = unname(sh$statistic),
-    p_value = unname(sh$p.value)
+    Statistic = as.numeric(sh$statistic),
+    p_value = as.numeric(sh$p.value)
   )
   safe_kable(df_sh)
 }
@@ -102,17 +104,20 @@ if (inherits(bp, "try-error") ||
     is.null(bp$statistic) ||
     is.null(bp$p.value) ||
     length(bp$statistic) == 0 ||
-    length(bp$p.value) == 0) {
+    length(bp$p.value) == 0 ||
+    any(is.na(bp$statistic)) ||
+    any(is.na(bp$p.value))) {
   
   cat("Breusch–Pagan test could not be computed for this model.\n")
   
 } else {
   df_bp <- data.frame(
-    Statistic = unname(bp$statistic),
-    p_value = unname(bp$p.value)
+    Statistic = as.numeric(bp$statistic),
+    p_value = as.numeric(bp$p.value)
   )
   safe_kable(df_bp)
 }
+
 
 ```
 
