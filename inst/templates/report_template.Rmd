@@ -74,8 +74,14 @@ if (num_terms < 2) {
 ```{r}
 sh <- try(shapiro.test(residuals(m)), silent = TRUE)
 
-if (inherits(sh, "try-error") || is.null(sh$statistic) || is.null(sh$p.value)) {
-  cat("Shapiro-Wilk test could not be computed for this model.\n")
+if (inherits(sh, "try-error") ||
+    is.null(sh$statistic) ||
+    is.null(sh$p.value) ||
+    length(sh$statistic) == 0 ||
+    length(sh$p.value) == 0) {
+  
+  cat("Shapiro–Wilk test could not be computed for this model.\n")
+  
 } else {
   df_sh <- data.frame(
     Statistic = unname(sh$statistic),
@@ -83,6 +89,7 @@ if (inherits(sh, "try-error") || is.null(sh$statistic) || is.null(sh$p.value)) {
   )
   safe_kable(df_sh)
 }
+
 ```
 
 ## Heteroskedasticity (Breusch–Pagan Test)
@@ -91,8 +98,14 @@ if (inherits(sh, "try-error") || is.null(sh$statistic) || is.null(sh$p.value)) {
 library(lmtest)
 bp <- try(bptest(m), silent = TRUE)
 
-if (inherits(bp, "try-error") || is.null(bp$statistic) || is.null(bp$p.value)) {
+if (inherits(bp, "try-error") ||
+    is.null(bp$statistic) ||
+    is.null(bp$p.value) ||
+    length(bp$statistic) == 0 ||
+    length(bp$p.value) == 0) {
+  
   cat("Breusch–Pagan test could not be computed for this model.\n")
+  
 } else {
   df_bp <- data.frame(
     Statistic = unname(bp$statistic),
@@ -100,6 +113,7 @@ if (inherits(bp, "try-error") || is.null(bp$statistic) || is.null(bp$p.value)) {
   )
   safe_kable(df_bp)
 }
+
 ```
 
 ## Influential Points (Cook’s Distance)
