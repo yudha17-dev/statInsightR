@@ -18,14 +18,13 @@ library(statInsightR)
 
 m <- params$model
 
-# ---- Safe Table Helper ----
 safe_kable <- function(df) {
   if (is.null(df) || nrow(df) == 0 || ncol(df) == 0) {
-    cat("No valid results available for this test.\n")
+    cat("No valid results available for this test.
+")
     return(invisible(NULL))
   }
-  kable(df, format = "html") %>%
-    kable_styling(full_width = FALSE)
+  kable(df, format = "html") %>% kable_styling(full_width = FALSE)
 }
 ```
 
@@ -50,22 +49,20 @@ summary_clean(m)
 
 ```{r}
 library(car)
-num_terms <- length(attr(terms(m), "term.labels"))
+vif_res <- try(vif(m), silent = TRUE)
 
-if (num_terms < 2) {
-  cat("VIF not available: model has fewer than 2 predictors.\n")
+if (inherits(vif_res, "try-error") || length(vif_res) == 0) {
+  cat("VIF cannot be computed for this model.
+")
+} else if (length(names(vif_res)) != length(vif_res)) {
+  cat("VIF results invalid for this model.
+")
 } else {
-  vif_res <- try(vif(m), silent = TRUE)
-
-  if (inherits(vif_res, "try-error")) {
-    cat("Could not compute VIF for this model.\n")
-  } else {
-    df_vif <- data.frame(
-      Variable = names(vif_res),
-      VIF = round(vif_res, 3)
-    )
-    safe_kable(df_vif)
-  }
+  df_vif <- data.frame(
+    Variable = names(vif_res),
+    VIF = round(vif_res, 3)
+  )
+  safe_kable(df_vif)
 }
 ```
 
@@ -74,24 +71,16 @@ if (num_terms < 2) {
 ```{r}
 sh <- try(shapiro.test(residuals(m)), silent = TRUE)
 
-if (inherits(sh, "try-error") ||
-    is.null(sh$statistic) ||
-    is.null(sh$p.value) ||
-    length(sh$statistic) == 0 ||
-    length(sh$p.value) == 0 ||
-    any(is.na(sh$statistic)) ||
-    any(is.na(sh$p.value))) {
-  
-  cat("Shapiro-Wilk test could not be computed for this model.\n")
-  
+if (inherits(sh, "try-error") || is.null(sh$statistic) || is.null(sh$p.value)) {
+  cat("Shapiro-Wilk test could not be computed for this model.
+")
 } else {
   df_sh <- data.frame(
-    Statistic = as.numeric(sh$statistic),
-    p_value = as.numeric(sh$p.value)
+    Statistic = unname(sh$statistic),
+    p_value = unname(sh$p.value)
   )
   safe_kable(df_sh)
 }
-
 ```
 
 ## Heteroskedasticity (Breusch–Pagan Test)
@@ -100,43 +89,49 @@ if (inherits(sh, "try-error") ||
 library(lmtest)
 bp <- try(bptest(m), silent = TRUE)
 
-if (inherits(bp, "try-error") ||
-    is.null(bp$statistic) ||
-    is.null(bp$p.value) ||
-    length(bp$statistic) == 0 ||
-    length(bp$p.value) == 0 ||
-    any(is.na(bp$statistic)) ||
-    any(is.na(bp$p.value))) {
-  
-  cat("Breusch–Pagan test could not be computed for this model.\n")
-  
+if (inherits(bp, "try-error") || is.null(bp$statistic) || is.null(bp$p.value)) {
+  cat("Breusch–Pagan test could not be computed for this model.
+")
 } else {
   df_bp <- data.frame(
-    Statistic = as.numeric(bp$statistic),
-    p_value = as.numeric(bp$p.value)
+    Statistic = unname(bp$statistic),
+    p_value = unname(bp$p.value)
   )
   safe_kable(df_bp)
 }
-
-
 ```
 
 ## Influential Points (Cook’s Distance)
 
 ```{r}
-ci <- cooks.distance(m)
-n <- length(ci)
+ci <- try(cooks.distance(m), silent = TRUE)
 
-df_ci <- data.frame(
-  Index = seq_along(ci),
-  Cook = ci,
-  Influential = ifelse(ci > (4/n), "Yes", "No")
-)
+if (inherits(ci, "try-error") || length(ci) == 0 || all(is.na(ci))) {
+  cat("Cook's distance cannot be computed for this model.
+")
+} else {
+  n <- length(ci)
+  influence_flag <- ci > (4/n)
 
-df_ci <- df_ci[order(-df_ci$Cook), ]
+  if (length(influence_flag) == length(ci)) {
+    df_ci <- data.frame(
+      Index = seq_along(ci),
+      Cook = ci,
+      Influential = ifelse(influence_flag, "Yes", "No")
+    )
 
-cat("### Top 10 Most Influential Points\n\n")
-safe_kable(head(df_ci, 10))
+    df_ci <- df_ci[order(-df_ci$Cook), ]
+
+    cat("### Top 10 Most Influential Points
+
+")
+    safe_kable(head(df_ci, 10))
+
+  } else {
+    cat("Influence diagnostics unavailable.
+")
+  }
+}
 ```
 
 <details>
@@ -145,9 +140,9 @@ safe_kable(head(df_ci, 10))
 <br>
 
 ```{r}
-safe_kable(df_ci)
+if (exists("df_ci")) safe_kable(df_ci) else cat("No Cook's distance table available.
+")
 ```
-
 </details>
 
 # Diagnostic Plots
